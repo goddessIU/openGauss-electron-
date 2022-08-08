@@ -1,0 +1,19 @@
+.wrapper {
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background-image: url(../img/indexBg.jpg);
+    background-size: cover;
+}
+
+.wrapper--link {
+    font-size: 2rem;
+    color: black;
+    background-image: linear-gradient(to right, red , yellow);
+}
+
+

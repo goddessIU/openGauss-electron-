@@ -1,0 +1,37 @@
+.wrapper {
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+
+    background-image: url(../img/indexBg.jpg);
+    background-size: cover;
+}
+
+#wrapper--title {
+    height: 10vh;
+    width: 100vw;
+
+    text-align: center;
+}
+
+#app {
+    width: 90vw;
+    height: 80vh;
+    display: block;
+    background-color: #3cc88fcc;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    border: .1875rem solid black;
+}
+
+#tips {
+    color: red;
+}

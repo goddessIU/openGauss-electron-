@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../styles/global.css">
+    <link rel="stylesheet" href="../styles/add.css">
+</head>
+
+<body>
+    <div class="wrapper">
+        <h1 id="wrapper--title">网站聚合管理系统</h1>
+
+        <main id="app">
+            <h3> 您好，填写如下表单，进行添加内容</h3>
+            <p id="tips"></p>
+            <h5>一级网站:</h5>
+            <input type="text" id="firstInput">
+            <h5>二级网站</h5>
+            <input type="text" id="secondInput">
+            <h5>三级网站：</h5>
+            类型: <input type="text" id="thirdInput">
+            站点描述： <input type="text" id="desc">
+            网址，请不要过长： <input type="text" id="address">
+            是否常用
+            <p><input type="radio" name="frequency" id="frequen" value="1">是
+                <input type="radio" name="frequency">否
+            </p>
+
+            <button id="but">添加该信息</button>
+            <a href="./firstPage.html">返回查询页面</a>
+        </main>
+    </div>
+
+
+</body>
+
+<script>
+    const but = document.querySelector('#but')
+    but.addEventListener('click', addText)
+
+    const firstInput = document.querySelector('#firstInput')
+    const secondInput = document.querySelector('#secondInput')
+    const thirdInput = document.querySelector('#thirdInput')
+    const desc = document.querySelector('#desc')
+    const address = document.querySelector('#address')
+    const frequen = document.querySelector('#frequen')
+    const tips = document.querySelector('#tips')
+
+    // function addTextWithoutPromise(e) {
+    //     addText(e).then(val => {
+    //         console.log(val)
+    //     }, err => {
+    //         console.log(err)
+    //     })
+    // }
+
+    async function addText(e) {
+
+        const v1 = firstInput.value.trim()
+        const v2 = secondInput.value.trim()
+        const v3 = thirdInput.value.trim()
+        const descr = desc.value.trim()
+        const addressstr = address.value.trim()
+        const frequency = frequen.checked === true ? 1 : 0
+
+        if (v1 === '') {
+            tips.textContent = '需要填写正确的一级网站'
+            return false
+        }
+
+        try {
+            const sql1 = `SELECT * FROM ${v1};`
+            const result1 = await window.electronAPI.openFile(sql1)
+            try {
+                if (!v2) {
+                    tips.textContent = '请填写二级网站'
+                    return
+                }
+
+                const sql2 = `SELECT * FROM ${v1} WHERE 1=1 AND types = '${v2}';`
+                const result2 = await window.electronAPI.openFile(sql2)
+
+                console.log('result2', result2)
+                if (!result2.affectedRows) {
+                    tips.textContent = '二级网站不存在，本次将创建二级网站,之后请手动完成后面的添加'
+                    const sqlInsert1 = `INSERT INTO ${v1.toLowerCase()} (types) VALUES ('${v2}');`
+                    try {
+                        const resInsert1 = await window.electronAPI.openFile(sqlInsert1)
+                        const sqlCreate2 = `CREATE TABLE ${v2}
+                        (
+                            ${v2.toLowerCase()}_id  SERIAL  PRIMARY KEY,
+                            types VARCHAR(20) NOT NULL,
+                            ${v1.toLowerCase()}_id INT NOT NULL REFERENCES ${v1.toLowerCase()}(${v1.toLowerCase()}_id)
+                        );`
+                        const resCreate2 = await window.electronAPI.openFile(sqlCreate2)
+                    } catch (e) {
+                        tips.textContent = '二级网站输入信息有误'
+                        return
+                    }
+
+
+                    return
+                }
+
+                try {
+                    if (!descr || !addressstr) {
+                        tips.textContent = '三级网站不正确填写'
+                        return
+                    }
+
+                    const sql3 = `SELECT * FROM ${v2} WHERE 1=1 AND types = '${v3}';`
+                    const result3 = await window.electronAPI.openFile(sql3)
+
+                    console.log('result3', result3)
+
+                    if (!result3.affectedRows) {
+                        tips.textContent = '三级网站不存在，本次将创建三级网站,之后请手动完成后面的添加'
+
+                        const sqlSearchId = `SELECT * FROM ${v1} WHERE types = '${v2}';`
+                        console.log('sqlSearchId', sqlSearchId)
+                        const sqlSearchIdRes = await window.electronAPI.openFile(sqlSearchId)
+                        console.log('sqlSearchIdRes', sqlSearchIdRes)
+                        const searchId = sqlSearchIdRes.rows[0][`${v1.toLowerCase()}_id`]
+                        console.log('searchId', searchId)
+
+                        const sqlInsert2 = `INSERT INTO ${v2.toLowerCase()} (types, ${v1.toLowerCase()}_id) VALUES ('${v3}', ${searchId});`
+                        console.log('sqlInsert2', sqlInsert2)
+                        try {
+                            const resInsert2 = await window.electronAPI.openFile(sqlInsert2)
+                            const sqlCreate3 = `CREATE TABLE ${v3}
+                                (
+                                    ${v3.toLowerCase()}_id SERIAL  PRIMARY KEY,
+                                    addressStr VARCHAR(100) NOT NULL,
+                                    frequency INT NOT NULL,
+                                    create_time DATE NOT NULL,
+                                    descr VARCHAR(100) NOT NULL,
+                                    ${v2.toLowerCase()}_id INT NOT NULL REFERENCES ${v2}(${v2.toLowerCase()}_id)
+                                );`
+                            const resCreate3 = await window.electronAPI.openFile(sqlCreate3)
+                            console.log('res3', resCreate3)
+                        } catch (e) {
+                            tips.textContent = '三级网站输入信息有误'
+                            return
+                        }
+
+                        return
+                    }
+
+                    const id3 = result3.rows[0][`${v2.toLowerCase()}_id`]
+
+                    try {
+                        tips.textContent = ''
+                        const sql4 = `SELECT * FROM ${v3} WHERE 1=1 AND addressstr = '${addressstr}';`
+                        console.log(sql4)
+                        const result4 = await window.electronAPI.openFile(sql4)
+                        console.log('result4', result4)
+
+                        if (result4.affectedRows) {
+                            tips.textContent = '该网址已经存在'
+                            return
+                        }
+
+
+                        if (!result4.affectedRows) {
+                            try {
+                                const sql5 = `INSERT INTO ${v3} (addressstr, frequency, create_time, descr, ${v2.toLowerCase() + '_id'}) VALUES (
+                                '${addressstr}',
+                                ${frequency},
+                                current_timestamp,
+                                '${descr}',
+                                ${id3}
+                                );`
+                                console.log(sql5)
+                                const result5 = await window.electronAPI.openFile(sql5)
+
+                                console.log('result5', result5)
+                                return
+                            } catch (e) {
+                                tips.textContent = '格式不对，请从新输入'
+                                return
+                            }
+                        }
+                    } catch (e) {
+                        tips.textContent = '格式不对，请从新输入'
+                        return
+                    }
+
+
+                } catch (e) {
+                    tips.textContent = '三级网站不存在，本次将创建三级网站,之后请手动完成后面的添加'
+                    return
+                }
+            } catch (e) {
+                tips.textContent = '二级网站不存在，本次将创建二级网站,之后请手动完成后面的添加'
+                return
+            }
+        } catch (e) {
+            tips.textContent = '一级网站不存在, 请从新填写，一级网站固定，二三级可以创建新表'
+            //不对，是建表
+            // const addSql1 = `INSERT INTO ${v1} (types) VALUES ('${v1}');`
+            // const addResult1 = await window.electronAPI.openFile(addSql1)
+            // console.log(addResult1)
+            return
+        }
+
+
+    }
+
+
+</script>
+
+</html>

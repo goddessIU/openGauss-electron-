@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../styles/global.css">
+    <link rel="stylesheet" href="../styles/firstPage.css">
+</head>
+
+<body>
+    <div class="wrapper">
+        <h1 id="wrapper--title">网站聚合管理系统</h1>
+
+        <main id="app">
+            <ul class="types">
+                <li onclick="addLearn()">Learn</li>
+                <li onclick="addEase()">Ease</li>
+                <li onclick="addOther()">Other</li>
+                <li onclick="openUser()">用户列表</li>
+            </ul>
+            <article id="rightWrapper">
+                <h3 id="title"></h3>
+                <div id="wrapperUl">
+                    <ul></ul>
+                    <div id="edit">
+                        <div id="delete">
+                            删除序号<input type="text" id="deleteId">
+                            <button id="deleteBut">删除</button>
+                        </div>
+                        <div id="update">
+                            <p>
+                                修改序号<input type="text" id="updateId">
+                            </p>
+                            <p>
+                                <span id="updateTip">更新为</span>
+                                <input type="text" id="updateContent">
+                            </p>
+                            <p>
+                                <button id="updateBut">更新</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </article>
+            <aside>
+                <a href="add.html">添加页面</a>
+            </aside>
+        </main>
+    </div>
+
+
+</body>
+
+<script>
+    const table = document.querySelector('#rightWrapper ul')
+    const title = document.querySelector('#title')
+    const deleteIdInput = document.querySelector('#deleteId')
+    const deleteBut = document.querySelector('#deleteBut')
+    const updateTip = document.querySelector('#updateTip')
+    let updateBut = document.querySelector('#updateBut')
+    let updateContentInput = document.querySelector('#updateContent')
+    let updateIdInput = document.querySelector('#updateId')
+    let level = 0;
+    let firstTable = ''
+    let secondTable = ''
+    let thirdTable = ''
+
+    deleteBut.addEventListener('click', deleteMethod)
+    updateBut.addEventListener('click', updateMethod)
+
+    window.onload = function () {
+        addLearn()
+    }
+
+    async function openUser(e) {
+        //e.preventDefault()
+
+        const sql = `
+            SELECT username FROM Users_VIEW;
+        `
+        try {
+            const tResult = await window.electronAPI.openFile(sql)
+            const result = tResult.rows
+            console.log('resutlUser', tResult)
+            const doc = new DocumentFragment()
+            if (result) {
+                for (let i = 0; i < result.length; i++) {
+                    const res = result[i]
+                    const li = document.createElement('li')
+                    li.innerHTML = `${i}.用户名${res.username}`
+                    doc.append(li)
+                }
+            }
+
+            table.innerHTML = ''
+            table.append(doc)
+        } catch (e) {
+
+        }
+    }
+
+
+
+
+    async function clickthirdLI(e) {
+        updateTip.textContent = '更新网址为'
+
+        thirdTable = e.target.getAttribute('data-type')
+        level = 3;
+        title.innerText = '三级网站'
+        const text = e.target.innerText.split('.')[1]
+        const sql = `select * from ${text};`
+        const tResult = await window.electronAPI.openFile(sql)
+        const result = tResult.rows
+
+        const doc = new DocumentFragment()
+        if (result) {
+            for (let i = 0; i < result.length; i++) {
+                const res = result[i]
+                const li = document.createElement('li')
+                li.innerHTML = `${i}.描述:${res.descr}--网址:${res.addressstr}--常用度：${res.frequency === 1 ? '常用' : '偶尔'}`
+                li.setAttribute('data-address', res.addressstr)
+                doc.append(li)
+            }
+        }
+
+        table.innerHTML = ''
+        table.append(doc)
+    }
+
+    async function clickSecondLI(e) {
+        secondTable = e.target.getAttribute('data-type')
+        level = 2;
+        title.innerText = '二级网站'
+        const text = e.target.innerText.split('.')[1]
+        const sql = `select * from ${text};`
+        const tResult = await window.electronAPI.openFile(sql)
+        const result = tResult.rows
+
+        const doc = new DocumentFragment()
+        if (result) {
+            for (let i = 0; i < result.length; i++) {
+                const res = result[i]
+                const li = document.createElement('li')
+                li.innerHTML = `${i}.${res.types}`
+                li.setAttribute('data-type', res.types)
+                li.addEventListener('click', clickthirdLI)
+                doc.append(li)
+            }
+        }
+
+        table.innerHTML = ''
+        table.append(doc)
+    }
+
+    async function addLearn(e) {
+        level = 1;
+        firstTable = 'Learn'
+        title.innerText = '一级网站'
+        const sql = `select * from ${firstTable};`
+        const tResult = await window.electronAPI.openFile(sql)
+        const result = tResult.rows
+        const doc = new DocumentFragment()
+        if (result) {
+            for (let i = 0; i < result.length; i++) {
+                const res = result[i]
+                const li = document.createElement('li')
+                li.innerHTML = `${i}.${res.types}`
+                li.setAttribute('data-type', res.types)
+                li.addEventListener('click', clickSecondLI)
+                doc.append(li)
+            }
+        }
+
+        table.innerHTML = ''
+        table.append(doc)
+    }
+
+    async function addEase(e) {
+        level = 1;
+        firstTable = 'Ease'
+        title.innerText = '一级网站'
+        const sql = `select * from ${firstTable};`
+        const tResult = await window.electronAPI.openFile(sql)
+        const result = tResult.rows
+        const doc = new DocumentFragment()
+        if (result) {
+            for (let i = 0; i < result.length; i++) {
+                const res = result[i]
+                const li = document.createElement('li')
+                li.innerHTML = `${i}.${res.types}`
+                li.setAttribute('data-type', res.types)
+                li.addEventListener('click', clickSecondLI)
+                doc.append(li)
+            }
+        }
+
+        table.innerHTML = ''
+        table.append(doc)
+    }
+
+    async function addOther(e) {
+        level = 1;
+        firstTable = 'Other'
+        title.innerText = '一级网站'
+        const sql = `select * from ${firstTable};`
+        const tResult = await window.electronAPI.openFile(sql)
+        const result = tResult.rows
+        const doc = new DocumentFragment()
+        if (result) {
+            for (let i = 0; i < result.length; i++) {
+                const res = result[i]
+                const li = document.createElement('li')
+                li.innerHTML = `${i}.${res.types}`
+                li.setAttribute('data-type', res.types)
+                li.addEventListener('click', clickSecondLI)
+                doc.append(li)
+            }
+        }
+
+        table.innerHTML = ''
+        table.append(doc)
+    }
+
+
+
+    async function deleteFirst(e, num, lis) {
+        const li = lis[num]
+        const type = li.getAttribute('data-type')
+        const sqlGetSecond = `SELECT * FROM ${type};`
+        const selectResArr = []
+        try {
+            const selectRes = await window.electronAPI.openFile(sqlGetSecond)
+            console.log(selectRes)
+            if (selectRes.rows) {
+                for (const m of selectRes.rows) {
+                    selectResArr.push(m.types)
+                }
+            }
+        } catch (e) {
+
+        }
+        for (const m of selectResArr) {
+            const sqlDropTable = `DROP TABLE ${m};`
+            try {
+                const resDrop = await window.electronAPI.openFile(sqlDropTable)
+                console.log(resDrop)
+            } catch (e) {
+
+            }
+        }
+
+        const sqlDropTable1 = `DROP TABLE ${type};`
+        try {
+            const resDrop1 = await window.electronAPI.openFile(sqlDropTable1)
+            console.log(resDrop1)
+        } catch (e) {
+
+        }
+
+        const sqlDelete = `DELETE ${firstTable} WHERE types = '${type}';`
+        try {
+            const resDelete = await window.electronAPI.openFile(sqlDelete)
+            console.log(resDelete)
+
+        } catch (e) {
+
+        }
+        li.remove()
+    }
+
+    async function deleteSecond(e, num, lis) {
+        const li = lis[num]
+        const type = li.getAttribute('data-type')
+        const sqlDropTable = `DROP TABLE ${type};`
+        const sqlDelete = `DELETE ${secondTable} WHERE types='${type}';`
+        let resDrop;
+        let resDelete;
+        try {
+            resDrop = await window.electronAPI.openFile(sqlDropTable)
+            console.log(resDrop)
+        } catch (e) {
+
+        }
+        try {
+            resDelete = await window.electronAPI.openFile(sqlDelete)
+            console.log(resDelete)
+
+        } catch (e) {
+
+        }
+        li.remove()
+    }
+
+    async function deleteThird(e, num, lis) {
+        const li = lis[num]
+        const dataAddress = li.getAttribute('data-address')
+
+        const sql = `DELETE ${thirdTable} WHERE addressstr = '${dataAddress}';`
+        try {
+            const res = await window.electronAPI.openFile(sql)
+        } catch (e) {
+
+        }
+
+        li.remove()
+
+        return res
+    }
+
+    async function deleteMethod(e) {
+        e.preventDefault()
+
+        const delId = deleteIdInput.value.trim()
+        if (delId === '') {
+            return
+        }
+        const lis = document.querySelectorAll('#wrapperUl ul li')
+        const num = parseInt(delId)
+
+        if (level === 3) {
+            const res = await deleteThird(e, num, lis)
+            console.log('res', res)
+        } else if (level === 2) {
+            const res = await deleteSecond(e, num, lis)
+        } else if (level === 1) {
+            const res = await deleteFirst(e, num, lis)
+        }
+    }
+
+    async function updateThird(e, num, lis, updateContent) {
+        const li = lis[num]
+        const dataAddress = li.getAttribute('data-address')
+
+        const sql = `UPDATE ${thirdTable} SET addressstr = '${updateContent}' WHERE addressstr = '${dataAddress}';`
+
+        console.log('sql', sql)
+        console.log('dataAddress', dataAddress)
+
+        try {
+            const res = await window.electronAPI.openFile(sql)
+            console.log('updateThrid', res)
+
+            const text = li.textContent
+            const arr = text.split('--')
+            arr[1] = `--网址:${updateContent}--`
+            li.textContent = arr.join('')
+        } catch (e) {
+
+        }
+
+    }
+
+    async function updateFirst(e, num, lis, updateContent) {
+        const li = lis[num]
+        const type = li.getAttribute('data-type')
+
+        const sqlSearchSecond = `SELECT types FROM ${type};`
+        const typesArr = []
+        try {
+            const resSearchSecond = await window.electronAPI.openFile(sqlSearchSecond)
+            console.log('resSearchSecond', resSearchSecond)
+            if (resSearchSecond.rows) {
+                for (const m of resSearchSecond.rows) {
+                    typesArr.push(m.types)
+                }
+                console.log('typesArr', typesArr)
+            }
+
+            if (typesArr.length) {
+                for (const m of typesArr) {
+                    const sqlRenameColumnThird = `ALTER TABLE ${m} RENAME ${type.toLowerCase()}_id TO ${updateContent.toLowerCase()}_id;`
+
+                    try {
+                        const resRenameColumnThird = await window.electronAPI.openFile(sqlRenameColumnThird)
+                        console.log('resRenameColumnThird', resRenameColumnThird)
+                    } catch (e) {
+
+                    }
+                }
+            }
+
+            const sqlRenameTable = `ALTER TABLE ${type} RENAME TO ${updateContent};`
+            const sqlRenameColumn = `ALTER TABLE ${type} RENAME ${type.toLowerCase()}_id TO ${updateContent.toLowerCase()}_id;`
+
+            try {
+                const resRenameColumn = await window.electronAPI.openFile(sqlRenameColumn)
+                console.log('resRenameColumn', resRenameColumn)
+
+                try {
+                    const resRenameTable = await window.electronAPI.openFile(sqlRenameTable)
+                    console.log('resRenameTable', resRenameTable)
+
+                    const sqlUpdate = `UPDATE ${firstTable} SET types = '${updateContent}' WHERE types = '${type}';`
+
+                    try {
+                        const resUpdate = await window.electronAPI.openFile(sqlUpdate)
+                        console.log('resUpdate', resUpdate)
+
+                        li.textContent = `${num}.${updateContent}`
+
+
+
+                    } catch (e) {
+
+                    }
+                } catch (e) {
+
+                }
+            } catch (e) {
+
+            }
+
+
+        } catch (e) {
+
+        }
+
+
+
+    }
+
+    async function updateSecond(e, num, lis, updateContent) {
+        const li = lis[num]
+        const type = li.getAttribute('data-type')
+
+        const sqlRenameTable = `ALTER TABLE ${type} RENAME TO ${updateContent};`
+        const sqlRenameColumn = `ALTER TABLE ${type} RENAME ${type.toLowerCase()}_id TO ${updateContent.toLowerCase()}_id;`
+
+        try {
+            const resRenameColumn = await window.electronAPI.openFile(sqlRenameColumn)
+            console.log('resRenameColumn', resRenameColumn)
+
+            try {
+                const resRenameTable = await window.electronAPI.openFile(sqlRenameTable)
+                console.log('resRenameTable', resRenameTable)
+
+                const sqlUpdate = `UPDATE ${secondTable} SET types = '${updateContent}' WHERE types = '${type}';`
+
+                try {
+                    const resUpdate = await window.electronAPI.openFile(sqlUpdate)
+                    console.log('resUpdate', resUpdate)
+
+                    li.textContent = `${num}.${updateContent}`
+
+
+
+                } catch (e) {
+
+                }
+            } catch (e) {
+
+            }
+        } catch (e) {
+
+        }
+
+
+    }
+
+    async function updateMethod(e) {
+        const updateContent = updateContentInput.value
+        const updateId = updateIdInput.value;
+        const num = parseInt(updateId)
+
+        const lis = document.querySelectorAll('#wrapperUl ul li')
+
+        if (level === 3) {
+            const res = await updateThird(e, num, lis, updateContent)
+        } else if (level === 2) {
+            const res = await updateSecond(e, num, lis, updateContent)
+        } else if (level === 1) {
+            const res = await updateFirst(e, num, lis, updateContent)
+        }
+
+    }
+
+</script>
+
+</html>

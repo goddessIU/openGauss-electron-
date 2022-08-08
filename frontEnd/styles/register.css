@@ -1,0 +1,50 @@
+.wrapper {
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    background-image: url(../img/indexBg.jpg);
+    background-size: cover;
+}
+
+.wrapper .userface {
+    width: 70vw;
+    height: 70vh;
+
+    background-color: #bab6b0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.wrapper .userface h3 {
+    height: 10vh;
+
+}
+
+.wrapper .userface .inputArea {
+    height: 50vh;
+    width: 70vw;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.wrapper .userface .inputArea input {
+    width: 50vw;
+}
+
+.wrapper .userface .route {
+    width: 70vw;
+    height: 10vh;
+
+    text-align: center;
+}
